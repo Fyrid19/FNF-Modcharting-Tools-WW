@@ -5,6 +5,8 @@ import flixel.tweens.FlxTween;
 import modcharting.Modifier;
 #if LEATHER
 import game.Conductor;
+#elseif NMV
+import funkin.backend.Conductor;
 #end
 
 class ModTable

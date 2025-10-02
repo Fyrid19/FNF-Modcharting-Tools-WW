@@ -11,6 +11,11 @@ import game.Conductor;
 #if polymod
 import polymod.backends.PolymodAssets;
 #end
+#elseif NMV
+import funkin.states.PlayState;
+import funkin.objects.note.Note;
+import funkin.backend.Conductor;
+import funkin.Paths;
 #end
 #if sys
 import sys.io.File;

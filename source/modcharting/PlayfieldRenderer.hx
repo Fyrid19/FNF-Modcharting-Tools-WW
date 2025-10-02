@@ -23,6 +23,11 @@ import states.PlayState;
 import game.Note;
 import game.StrumNote;
 import game.Conductor;
+#elseif NMV
+import funkin.states.PlayState;
+import funkin.objects.note.Note;
+import funkin.objects.note.StrumNote;
+import funkin.backend.Conductor;
 #else 
 import PlayState;
 import Note;
@@ -39,15 +44,19 @@ using StringTools;
 //start documenting more stuff idk
 
 typedef StrumNoteType = 
-#if (PSYCH || LEATHER) StrumNote
+#if (PSYCH || LEATHER || NMV) StrumNote
 #elseif KADE StaticArrow
 #elseif FOREVER_LEGACY UIStaticArrow
 #elseif ANDROMEDA Receptor
 #else FlxSprite #end;
 
+typedef GroupType = 
+#if NMV Array<StrumNoteType>
+#else FlxTypedGroup<StrumNoteType> #end;
+
 class PlayfieldRenderer extends FlxSprite //extending flxsprite just so i can edit draw
 {
-    public var strumGroup:FlxTypedGroup<StrumNoteType>;
+    public var strumGroup:GroupType;
     public var notes:FlxTypedGroup<Note>;
     public var instance:ModchartMusicBeatState;
     public var playStateInstance:PlayState;
@@ -71,7 +80,7 @@ class PlayfieldRenderer extends FlxSprite //extending flxsprite just so i can ed
     }
 
 
-    public function new(strumGroup:FlxTypedGroup<StrumNoteType>, notes:FlxTypedGroup<Note>,instance:ModchartMusicBeatState) 
+    public function new(strumGroup:GroupType, notes:FlxTypedGroup<Note>,instance:ModchartMusicBeatState) 
     {
         super(0,0);
         this.strumGroup = strumGroup;
@@ -80,7 +89,11 @@ class PlayfieldRenderer extends FlxSprite //extending flxsprite just so i can ed
         if (Std.isOfType(instance, PlayState))
             playStateInstance = cast instance; //so it just casts once
 
+        #if NMV
+        for (note in strumGroup) note.visible = false; //drawing with renderer instead
+        #else
         strumGroup.visible = false; //drawing with renderer instead
+        #end
         notes.visible = false;
 
         //fix stupid crash because the renderer in playstate is still technically null at this point and its needed for json loading
@@ -112,7 +125,11 @@ class PlayfieldRenderer extends FlxSprite //extending flxsprite just so i can ed
         if (alpha == 0 || !visible)
             return;
 
+        #if NMV
+        for (note in strumGroup) note.cameras = this.cameras;
+        #else
         strumGroup.cameras = this.cameras;
+        #end
         notes.cameras = this.cameras;
         
         drawStuff(getNotePositions());
@@ -204,7 +221,11 @@ class PlayfieldRenderer extends FlxSprite //extending flxsprite just so i can ed
             strumTimeOffset -= Std.int(Conductor.stepCrochet/getCorrectScrollSpeed()); //psych does this to fix its sustains but that breaks the visuals so basically reverse it back to normal
         #else 
         if (notes.members[noteIndex].isSustainNote && !ModchartUtil.getDownscroll(instance))
+            #if NMV
+            strumTimeOffset += Conductor.stepCrotchet; //fix upscroll lol
+            #else
             strumTimeOffset += Conductor.stepCrochet; //fix upscroll lol
+            #end
         #end
         var distance = (Conductor.songPosition - notes.members[noteIndex].strumTime) + strumTimeOffset;
         return distance*getCorrectScrollSpeed();
@@ -227,7 +248,11 @@ class PlayfieldRenderer extends FlxSprite //extending flxsprite just so i can ed
         var notePositions:Array<NotePositionData> = [];
         for (pf in 0...playfields.length)
         {
+            #if NMV
+            for (i in 0...strumGroup.length)
+            #else
             for (i in 0...strumGroup.members.length)
+            #end
             {
                 var strumData = getDataForStrum(i, pf);
                 notePositions.push(strumData);
@@ -292,7 +317,11 @@ class PlayfieldRenderer extends FlxSprite //extending flxsprite just so i can ed
     {
         if (noteData.alpha <= 0)
             return;
+        #if NMV
+        var strumNote = strumGroup[noteData.index];
+        #else
         var strumNote = strumGroup.members[noteData.index];
+        #end
         var thisNotePos = ModchartUtil.calculatePerspective(new Vector3D(noteData.x+(strumNote.width/2), noteData.y+(strumNote.height/2), noteData.z*0.001), 
         ModchartUtil.defaultFOV*(Math.PI/180), -(strumNote.width/2), -(strumNote.height/2));
 
@@ -301,10 +330,17 @@ class PlayfieldRenderer extends FlxSprite //extending flxsprite just so i can ed
         noteData.scaleX *= (1/-thisNotePos.z);
         noteData.scaleY *= (1/-thisNotePos.z);
 
+        #if NMV
+        addDataToStrum(noteData, strumGroup[noteData.index]); //set position and stuff before drawing
+        strumGroup[noteData.index].cameras = this.cameras;
+
+        strumGroup[noteData.index].draw();
+        #else
         addDataToStrum(noteData, strumGroup.members[noteData.index]); //set position and stuff before drawing
         strumGroup.members[noteData.index].cameras = this.cameras;
 
         strumGroup.members[noteData.index].draw();
+        #end
     }
     private function drawNote(noteData:NotePositionData)
     {

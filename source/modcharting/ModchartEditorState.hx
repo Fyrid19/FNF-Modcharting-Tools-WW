@@ -63,6 +63,18 @@ import utilities.NoteVariables;
 import states.LoadingState;
 import states.MusicBeatState;
 import substates.MusicBeatSubstate;
+#elseif NMV
+import funkin.states.PlayState;
+import funkin.data.Chart;
+import funkin.data.Song.SwagSong;
+import funkin.data.Song.SwagSection;
+import funkin.objects.note.Note;
+import funkin.objects.note.StrumNote;
+import extensions.flixel.FlxUIDropDownMenuEx as FlxUIDropDownMenuCustom;
+import funkin.backend.Conductor;
+import funkin.utils.CoolUtil;
+import funkin.backend.MusicBeatState;
+import funkin.backend.MusicBeatSubstate;
 #else
 import Section.SwagSection;
 import Song.SwagSong;
@@ -102,9 +114,10 @@ class ModchartEditorEvent extends FlxSprite
     public function getBeatTime():Float { return data[ModchartFile.EVENT_DATA][ModchartFile.EVENT_TIME]; }
     #end
 }
-#if ((PSYCH || LEATHER) && !DISABLE_MODCHART_EDITOR)
+
 class ModchartEditorState extends MusicBeatState
 {
+    #if ((PSYCH || LEATHER) && !DISABLE_MODCHART_EDITOR)
     var hasUnsavedChanges:Bool = false;
     override function closeSubState() 
     {
@@ -325,7 +338,7 @@ class ModchartEditorState extends MusicBeatState
 		persistentDraw = true;
 
 		if (PlayState.SONG == null)
-			PlayState.SONG = Song.loadFromJson('tutorial');
+			PlayState.SONG = #if NMV Chart.fromSong('tutorial') #else Song.loadFromJson('tutorial') #end;
 
 		Conductor.mapBPMChanges(PlayState.SONG);
 		Conductor.changeBPM(PlayState.SONG.bpm);
@@ -771,7 +784,12 @@ class ModchartEditorState extends MusicBeatState
                 #if PSYCH 
                 StageData.loadDirectory(PlayState.SONG);
                 #end
+
+                #if NMV
+                FlxG.switchState(PlayState.new);
+                #else
                 LoadingState.loadAndSwitchState(new PlayState());
+                #end
             };
             if (hasUnsavedChanges)
             {
@@ -2110,5 +2128,5 @@ class ModchartEditorExitSubstate extends MusicBeatSubstate
 
         cameras = [FlxG.cameras.list[FlxG.cameras.list.length-1]];
     }
+    #end
 }
-#end

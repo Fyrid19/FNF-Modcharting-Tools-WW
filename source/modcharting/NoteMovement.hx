@@ -8,7 +8,9 @@ import flixel.FlxG;
 #if LEATHER
 import states.PlayState;
 import game.Note;
-
+#elseif NMV
+import funkin.states.PlayState;
+import funkin.objects.note.Note;
 #else 
 import PlayState;
 import Note;
@@ -39,11 +41,18 @@ class NoteMovement
         keyCount = #if (LEATHER || KADE) PlayState.strumLineNotes.length-PlayState.playerStrums.length #else game.strumLineNotes.length-game.playerStrums.length #end; //base game doesnt have opponent strums as group
         playerKeyCount = #if (LEATHER || KADE) PlayState.playerStrums.length #else game.playerStrums.length #end;
 
-        for (i in #if (LEATHER || KADE) 0...PlayState.strumLineNotes.members.length #else 0...game.strumLineNotes.members.length #end)
+        #if NMV
+        keyCount = PlayState.instance.strumLineNotes.length-PlayState.instance.playerStrums.length;
+        playerKeyCount = PlayState.instance.playerStrums.length;
+        #end
+
+        for (i in #if (LEATHER || KADE) 0...PlayState.strumLineNotes.members.length #elseif NMV 0...PlayState.instance.strumLineNotes.length #else 0...game.strumLineNotes.members.length #end)
         {
             #if (LEATHER || KADE) 
             var strum = PlayState.strumLineNotes.members[i];
-            #else 
+            #elseif NMV
+            var strum = PlayState.instance.strumLineNotes[i];
+            #else
             var strum = game.strumLineNotes.members[i];
             #end
             defaultStrumX.push(strum.x);

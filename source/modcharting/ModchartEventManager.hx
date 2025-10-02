@@ -2,6 +2,8 @@ package modcharting;
 
 #if LEATHER
 import game.Conductor;
+#elseif NMV
+import funkin.backend.Conductor;
 #end
 
 class ModchartEventManager

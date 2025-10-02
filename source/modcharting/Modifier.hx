@@ -9,6 +9,11 @@ import states.PlayState;
 import game.Note;
 import game.StrumNote;
 import game.Conductor;
+#elseif NMV
+import funkin.states.PlayState;
+import funkin.objects.note.Note;
+import funkin.objects.note.StrumNote;
+import funkin.backend.Conductor;
 #else 
 import PlayState;
 import Note;
@@ -821,7 +826,10 @@ class JumpModifier extends Modifier //custom thingy i made
                 scrollSwitch = -1;
 
         
-
+        #if NMV
+        noteData.y += (beatVal*(Conductor.stepCrotchet*currentValue))*renderer.getCorrectScrollSpeed()*0.45*scrollSwitch;
+        #else
         noteData.y += (beatVal*(Conductor.stepCrochet*currentValue))*renderer.getCorrectScrollSpeed()*0.45*scrollSwitch;
+        #end
     }
 }

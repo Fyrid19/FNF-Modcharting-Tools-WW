@@ -10,6 +10,10 @@ import flixel.FlxG;
 import states.PlayState;
 import game.Note;
 import game.Conductor;
+#elseif NMV
+import funkin.states.PlayState;
+import funkin.objects.note.Note;
+import funkin.backend.Conductor;
 #else 
 import PlayState;
 import Note;

@@ -13,6 +13,9 @@ import llua.Convert;
 #if LEATHER
 import states.PlayState;
 import game.Conductor;
+#elseif NMV
+import funkin.states.PlayState;
+import funkin.backend.Conductor;
 #end
 
 import modcharting.Modifier;
@@ -294,10 +297,18 @@ class ModchartFuncs
                     var modName = subModCheck[0];
                     var subModName = subModCheck[1];
                     //trace(subModCheck);
+                    #if NMV
+                    instance.playfieldRenderer.modifierTable.tweenModifierSubValue(modName,subModName,value,time*Conductor.crotchet*0.001,ease, beat);
+                    #else
                     instance.playfieldRenderer.modifierTable.tweenModifierSubValue(modName,subModName,value,time*Conductor.crochet*0.001,ease, beat);
+                    #end
                 }
                 else
+                    #if NMV
+                    instance.playfieldRenderer.modifierTable.tweenModifier(name,value,time*Conductor.crotchet*0.001,ease, beat);
+                    #else
                     instance.playfieldRenderer.modifierTable.tweenModifier(name,value,time*Conductor.crochet*0.001,ease, beat);
+                    #end
                 
             }
         };
